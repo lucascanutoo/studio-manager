@@ -42,6 +42,8 @@ const optionalCurrencySchema = z.preprocess((value) => {
   return value;
 }, z.union([z.string(), z.number()]).transform(currencyToCents));
 
+const requiredCurrencySchema = z.preprocess((value) => value, z.union([z.string().min(1, "Informe o valor pago."), z.number()]).transform(currencyToCents)).refine((value) => value >= 0, "Informe um valor valido.");
+
 export const registerSchema = z.object({
   name: z.string().min(2, "Informe seu nome."),
   email: z.string().email("Informe um email valido."),
@@ -87,5 +89,6 @@ export const attendanceSchema = z.object({
 }));
 
 export const paymentUpdateSchema = z.object({
+  finalValue: requiredCurrencySchema,
   paymentMethod: paidPaymentMethodSchema
 });

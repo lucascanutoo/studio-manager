@@ -20,6 +20,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const updated = await prisma.attendance.update({
       where: { id },
       data: {
+        finalValueCents: data.finalValue,
         paymentMethod: data.paymentMethod,
         paymentStatus: PaymentStatus.PAID,
         notes: attendance.notes === "Pagamento pendente" ? null : attendance.notes

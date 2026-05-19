@@ -5,6 +5,7 @@ import { CheckCircle2, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { PageHeader } from "@/components/page-header";
 import { formatCurrency, formatPhone, whatsappUrl } from "@/lib/format";
@@ -32,6 +33,7 @@ export default function FinancePage() {
   const [showPending, setShowPending] = useState(false);
   const [payTarget, setPayTarget] = useState<Attendance | null>(null);
   const [paymentMethod, setPaymentMethod] = useState("PIX");
+  const [paidValue, setPaidValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -47,17 +49,22 @@ export default function FinancePage() {
     setError("");
     setMessage("");
     setPaymentMethod("PIX");
+    setPaidValue(String((item.finalValueCents / 100).toFixed(2)).replace(".", ","));
     setPayTarget(item);
   }
 
   async function markAsPaid() {
     if (!payTarget) return;
+    if (!paidValue.trim()) {
+      setError("Informe o valor pago.");
+      return;
+    }
     setLoading(true);
     setError("");
     const response = await fetch(`/api/attendances/${payTarget.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ paymentMethod })
+      body: JSON.stringify({ finalValue: paidValue, paymentMethod })
     });
     setLoading(false);
     if (!response.ok) {
@@ -114,8 +121,13 @@ export default function FinancePage() {
         <div className="fixed inset-0 z-30 flex items-end bg-cocoa/40 p-4 backdrop-blur-sm sm:items-center sm:justify-center">
           <Card className="w-full sm:max-w-md">
             <h2 className="text-lg font-bold">Marcar como pago</h2>
-            <p className="mt-2 text-sm text-cocoa/65">{payTarget.client.name} - {formatCurrency(payTarget.finalValueCents)}</p>
+            <p className="mt-2 text-sm text-cocoa/65">{payTarget.client.name}</p>
+            <div className="mt-4 rounded-2xl bg-linen p-3">
+              <p className="font-semibold">{payTarget.service.name}</p>
+              <p className="text-sm text-cocoa/60">{formatBrazilDate(payTarget.attendedAt, "dd/MM/yyyy HH:mm")}</p>
+            </div>
             <div className="mt-5">
+              <Input label="Valor pago" value={paidValue} onChange={(event) => setPaidValue(event.target.value)} placeholder="85,00" inputMode="decimal" />
               <Select label="Metodo de pagamento" value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value)}>
                 <option value="PIX">Pix</option>
                 <option value="CASH">Dinheiro</option>
@@ -123,8 +135,8 @@ export default function FinancePage() {
               </Select>
             </div>
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <Button type="button" variant="secondary" onClick={() => setPayTarget(null)} disabled={loading}>Voltar</Button>
-              <Button type="button" onClick={markAsPaid} disabled={loading}>{loading ? "Salvando..." : "Confirmar"}</Button>
+              <Button type="button" variant="secondary" onClick={() => setPayTarget(null)} disabled={loading}>Cancelar</Button>
+              <Button type="button" onClick={markAsPaid} disabled={loading}>{loading ? "Salvando..." : "Confirmar pagamento"}</Button>
             </div>
           </Card>
         </div>
