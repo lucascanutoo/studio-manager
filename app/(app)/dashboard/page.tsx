@@ -58,8 +58,8 @@ export default function DashboardPage() {
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip formatter={(value) => formatCurrency(Number(value) * 100)} />
-              <Bar dataKey="revenue" fill="#9f5366" radius={[8, 8, 0, 0]} />
+              <Tooltip formatter={(value) => [formatCurrency(Number(value) * 100), "Receita"]} />
+              <Bar dataKey="revenue" name="Receita" fill="#9f5366" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
