@@ -77,13 +77,6 @@ npm run prisma:seed
 npm run prisma:studio
 ```
 
-## Variaveis de ambiente
-
-```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/beauty_schedule?schema=public"
-JWT_SECRET="troque-por-um-segredo-grande-em-producao"
-```
-
 ## Deploy
 
 ### Vercel
@@ -99,26 +92,3 @@ JWT_SECRET="troque-por-um-segredo-grande-em-producao"
 2. Configure as mesmas variaveis.
 3. Use `npm run build` como build command e `npm run start` como start command.
 4. Execute `npx prisma migrate deploy` antes do start em producao.
-
-## Estrutura
-
-```text
-app/
-  api/              Rotas HTTP do backend
-  (auth)/login      Login e cadastro
-  (app)/dashboard   Dashboard protegido
-  (app)/clientes    Clientes e historico
-  (app)/servicos    Servicos
-  (app)/agenda      Agenda e novo agendamento
-  (app)/financeiro  Atendimentos pagos
-components/         Componentes reutilizaveis
-lib/                Prisma, auth, schemas e formatadores
-prisma/             Schema, migration e seed
-```
-
-## Proximos passos sugeridos
-
-- Trocar prompts simples de conclusao por modal completo com escolha da forma de pagamento.
-- Adicionar modo escuro persistente.
-- Adicionar testes de API para conflito de horario e autenticação.
-- Criar exportacao CSV do financeiro.
