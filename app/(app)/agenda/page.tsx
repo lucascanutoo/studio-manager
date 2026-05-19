@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CalendarPlus, CheckCircle2, MessageCircle, Pencil, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
@@ -114,7 +115,7 @@ export default function AgendaPage() {
                 <p className="font-bold">{formatBrazilDate(item.startsAt, "dd/MM HH:mm")} - {item.client.name}</p>
                 <p className="text-sm text-cocoa/60">{item.service.name} - {formatCurrency(item.service.priceCents)}</p>
               </div>
-              <span className={`rounded-full px-3 py-1 text-xs font-bold ${getAppointmentStatusBadgeClass(item.status)}`}>{getAppointmentStatusLabel(item.status)}</span>
+              <Badge className={getAppointmentStatusBadgeClass(item.status)}>{getAppointmentStatusLabel(item.status)}</Badge>
             </div>
             <div className="mt-3 grid grid-cols-5 gap-2">
               <a className="flex h-11 items-center justify-center rounded-2xl bg-green-50 text-green-700" href={whatsappUrl(item.client.phone)} target="_blank" rel="noreferrer"><MessageCircle size={18} /></a>

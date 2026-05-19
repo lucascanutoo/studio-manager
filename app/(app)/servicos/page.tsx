@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Power, Save } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { Modal } from "@/components/ui/modal";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/page-header";
 import { formatCurrency } from "@/lib/format";
@@ -18,8 +20,6 @@ export default function ServicesPage() {
   const [deactivateTarget, setDeactivateTarget] = useState<Service | null>(null);
   const [deactivating, setDeactivating] = useState(false);
   const [message, setMessage] = useState("");
-  const modalRef = useRef<HTMLDivElement>(null);
-  const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const [form, setForm] = useState({ name: "", description: "", price: "", durationMinutes: "45", active: true });
 
   async function load() {
@@ -28,32 +28,6 @@ export default function ServicesPage() {
   }
 
   useEffect(() => { load(); }, []);
-
-  useEffect(() => {
-    if (!deactivateTarget) return;
-    cancelButtonRef.current?.focus();
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !deactivating) setDeactivateTarget(null);
-      if (event.key !== "Tab" || !modalRef.current) return;
-
-      const focusable = Array.from(modalRef.current.querySelectorAll<HTMLElement>("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])")).filter((element) => !element.hasAttribute("disabled"));
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [deactivateTarget, deactivating]);
 
   function edit(service: Service) {
     setEditing(service);
@@ -112,7 +86,7 @@ export default function ServicesPage() {
                   <p className="text-sm text-cocoa/60">{service.description || "Sem descricao"}</p>
                   <p className="mt-2 text-sm font-semibold">{formatCurrency(service.priceCents)} - {service.durationMinutes} min</p>
                 </button>
-                <span className={`rounded-full px-3 py-1 text-xs font-bold ${service.active ? "bg-green-50 text-green-700" : "bg-zinc-100 text-zinc-500"}`}>{service.active ? "Ativo" : "Inativo"}</span>
+                <Badge variant={service.active ? "success" : "neutral"}>{service.active ? "Ativo" : "Inativo"}</Badge>
               </div>
               {service.active && <Button className="mt-3 w-full" variant="secondary" icon={<Power size={18} />} onClick={() => { setMessage(""); setDeactivateTarget(service); }}>Desativar</Button>}
             </Card>
@@ -120,29 +94,25 @@ export default function ServicesPage() {
         </section>
       </div>
 
-      {deactivateTarget && (
-        <div className="fixed inset-0 z-30 flex items-end bg-cocoa/40 p-4 backdrop-blur-sm transition-opacity sm:items-center sm:justify-center" role="presentation">
-          <Card
-            ref={modalRef}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="deactivate-service-title"
-            aria-describedby="deactivate-service-description"
-            className="w-full animate-[modalIn_160ms_ease-out] shadow-soft sm:max-w-md"
-          >
-            <h2 id="deactivate-service-title" className="text-lg font-bold">Desativar servico</h2>
-            <p id="deactivate-service-description" className="mt-2 text-sm text-cocoa/65">Este servico nao ficara mais disponivel para novos agendamentos, mas continuara aparecendo no historico.</p>
+      <Modal
+        open={Boolean(deactivateTarget)}
+        title="Desativar servico"
+        description="Este servico nao ficara mais disponivel para novos agendamentos, mas continuara aparecendo no historico."
+        onClose={() => { if (!deactivating) setDeactivateTarget(null); }}
+      >
+        {deactivateTarget && (
+          <>
             <div className="mt-4 rounded-2xl bg-linen p-3">
               <p className="font-semibold">{deactivateTarget.name}</p>
               <p className="text-sm text-cocoa/60">{formatCurrency(deactivateTarget.priceCents)} - {deactivateTarget.durationMinutes} min</p>
             </div>
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <Button ref={cancelButtonRef} type="button" variant="secondary" onClick={() => setDeactivateTarget(null)} disabled={deactivating}>Cancelar</Button>
+              <Button type="button" variant="secondary" onClick={() => setDeactivateTarget(null)} disabled={deactivating}>Cancelar</Button>
               <Button type="button" variant="danger" onClick={deactivate} disabled={deactivating}>{deactivating ? "Desativando..." : "Desativar servico"}</Button>
             </div>
-          </Card>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
     </>
   );
 }

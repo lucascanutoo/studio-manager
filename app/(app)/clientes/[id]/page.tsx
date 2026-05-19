@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { MessageCircle, Save } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -56,7 +57,7 @@ export default function ClientDetailPage() {
             <div key={item.id} className="mb-3 rounded-2xl bg-linen p-3 last:mb-0">
               <div className="flex items-center justify-between gap-3">
                 <p className="font-semibold">{item.service.name}</p>
-                <span className={`rounded-full px-3 py-1 text-xs font-bold ${getAppointmentStatusBadgeClass(item.status)}`}>{getAppointmentStatusLabel(item.status)}</span>
+                <Badge className={getAppointmentStatusBadgeClass(item.status)}>{getAppointmentStatusLabel(item.status)}</Badge>
               </div>
               <p className="mt-1 text-sm text-cocoa/60">{formatBrazilDate(item.startsAt, "dd/MM/yyyy HH:mm")}</p>
               {item.attendance && <p className="mt-1 text-sm font-semibold">{formatCurrency(item.attendance.finalValueCents)}</p>}

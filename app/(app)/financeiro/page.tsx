@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, MessageCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -103,7 +104,7 @@ export default function FinancePage() {
               </div>
               <div className="text-right">
                 <p className="font-bold text-rosewood">{formatCurrency(item.finalValueCents)}</p>
-                {item.paymentStatus === "PENDING" && <span className="mt-1 inline-block rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">Pendente</span>}
+                {item.paymentStatus === "PENDING" && <Badge variant="warning" className="mt-1">Pendente</Badge>}
               </div>
             </div>
             {item.notes && <p className="mt-3 rounded-2xl bg-linen p-3 text-sm text-cocoa/70">{item.notes}</p>}

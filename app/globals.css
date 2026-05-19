@@ -12,14 +12,23 @@
 
 body {
   margin: 0;
-  background: #fffaf7;
-  color: #3c3331;
+  background:
+    radial-gradient(circle at top left, rgba(248, 223, 231, 0.55), transparent 32rem),
+    linear-gradient(180deg, #fffaf7 0%, #fbf7f4 46%, #f7f1ed 100%);
+  color: #342927;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 input,
 select,
 textarea {
   font-size: 16px;
+}
+
+::selection {
+  background: #f8dfe7;
+  color: #5c4744;
 }
 
 .safe-bottom {
