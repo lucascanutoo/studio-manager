@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELED
+}
+
+enum PaymentMethod {
+  CASH
+  PIX
+  DEBIT_CARD
+  CREDIT_CARD
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Client {
+  id           String        @id @default(cuid())
+  name         String
+  phone        String
+  birthDate    DateTime?
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
+  attendances  Attendance[]
+
+  @@index([name])
+  @@index([phone])
+}
+
+model Service {
+  id              String        @id @default(cuid())
+  name            String
+  description     String?
+  priceCents      Int
+  durationMinutes Int
+  active          Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  appointments    Appointment[]
+  attendances     Attendance[]
+}
+
+model Appointment {
+  id        String            @id @default(cuid())
+  startsAt  DateTime
+  endsAt    DateTime
+  status    AppointmentStatus @default(SCHEDULED)
+  notes     String?
+  clientId  String
+  serviceId String
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  client    Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  service   Service           @relation(fields: [serviceId], references: [id])
+  attendance Attendance?
+
+  @@index([startsAt])
+  @@index([clientId])
+  @@index([serviceId])
+}
+
+model Attendance {
+  id            String        @id @default(cuid())
+  finalValueCents Int
+  paymentMethod PaymentMethod
+  notes         String?
+  attendedAt    DateTime      @default(now())
+  appointmentId String        @unique
+  clientId      String
+  serviceId     String
+  appointment   Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  client        Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  service       Service       @relation(fields: [serviceId], references: [id])
+
+  @@index([attendedAt])
+  @@index([clientId])
+  @@index([serviceId])
+}
