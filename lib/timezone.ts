@@ -1,4 +1,4 @@
-import { endOfWeek, format, parseISO, startOfWeek } from "date-fns";
+import { endOfMonth, endOfWeek, format, parseISO, startOfMonth, startOfWeek } from "date-fns";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
 export const APP_TIME_ZONE = "America/Sao_Paulo";
@@ -23,6 +23,17 @@ export function getBrazilWeekRange(date: string) {
   return {
     from: fromZonedTime(`${format(weekStart, "yyyy-MM-dd")}T00:00:00.000`, APP_TIME_ZONE),
     to: fromZonedTime(`${format(weekEnd, "yyyy-MM-dd")}T23:59:59.999`, APP_TIME_ZONE)
+  };
+}
+
+export function getBrazilMonthRange(date: string) {
+  const localBase = parseISO(`${date}T12:00:00`);
+  const monthStart = startOfMonth(localBase);
+  const monthEnd = endOfMonth(localBase);
+
+  return {
+    from: fromZonedTime(`${format(monthStart, "yyyy-MM-dd")}T00:00:00.000`, APP_TIME_ZONE),
+    to: fromZonedTime(`${format(monthEnd, "yyyy-MM-dd")}T23:59:59.999`, APP_TIME_ZONE)
   };
 }
 

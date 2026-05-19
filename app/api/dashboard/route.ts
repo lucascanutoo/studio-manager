@@ -1,23 +1,59 @@
-import { endOfMonth, format, startOfMonth, subMonths } from "date-fns";
+import { addDays, addMonths } from "date-fns";
 import { NextResponse } from "next/server";
 import { AppointmentStatus, PaymentStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/api";
-import { getBrazilDayRange, todayInBrazil } from "@/lib/timezone";
+import { formatBrazilDate, getBrazilDayRange, getBrazilMonthRange, getBrazilWeekRange, todayInBrazil } from "@/lib/timezone";
+
+type DashboardPeriod = "daily" | "weekly" | "monthly";
+
+function getPeriodRange(period: DashboardPeriod) {
+  const today = todayInBrazil();
+  if (period === "daily") return getBrazilDayRange(today);
+  if (period === "weekly") return getBrazilWeekRange(today);
+  return getBrazilMonthRange(today);
+}
+
+function buildRevenueSeries(rows: { attendedAt: Date; finalValueCents: number; paymentStatus: PaymentStatus }[], period: DashboardPeriod, from: Date) {
+  const buckets = new Map<string, number>();
+
+  if (period === "daily") {
+    Array.from({ length: 24 }).forEach((_, index) => buckets.set(`${String(index).padStart(2, "0")}h`, 0));
+  } else if (period === "weekly") {
+    Array.from({ length: 7 }).forEach((_, index) => buckets.set(formatBrazilDate(addDays(from, index), "dd/MM"), 0));
+  } else {
+    Array.from({ length: 6 }).forEach((_, index) => buckets.set(formatBrazilDate(addMonths(from, -5 + index), "MM/yy"), 0));
+  }
+
+  rows.filter((row) => row.paymentStatus === PaymentStatus.PAID).forEach((row) => {
+    const key = period === "daily"
+      ? formatBrazilDate(row.attendedAt, "HH'h'")
+      : period === "weekly"
+        ? formatBrazilDate(row.attendedAt, "dd/MM")
+        : formatBrazilDate(row.attendedAt, "MM/yy");
+    buckets.set(key, (buckets.get(key) ?? 0) + row.finalValueCents / 100);
+  });
+
+  return Array.from(buckets.entries()).map(([label, revenue]) => ({ label, revenue }));
+}
 
 export async function GET(request: Request) {
   const auth = await requireUser();
   if (auth.response) return auth.response;
   const { searchParams } = new URL(request.url);
-  const base = searchParams.get("month") ? new Date(`${searchParams.get("month")}-01T00:00:00`) : new Date();
-  const from = startOfMonth(base);
-  const to = endOfMonth(base);
+  const period = (searchParams.get("period") ?? "monthly") as DashboardPeriod;
+  const safePeriod: DashboardPeriod = ["daily", "weekly", "monthly"].includes(period) ? period : "monthly";
+  const { from, to } = getPeriodRange(safePeriod);
   const todayRange = getBrazilDayRange(todayInBrazil());
 
-  const [attendances, clientsCount, todayAppointments, topClients] = await Promise.all([
+  const chartFrom = safePeriod === "monthly" ? addMonths(from, -5) : from;
+  const [attendances, chartAttendances, clientsCount, todayAppointments, topClients] = await Promise.all([
     prisma.attendance.findMany({
       where: { attendedAt: { gte: from, lte: to } },
       include: { service: true, client: true }
+    }),
+    prisma.attendance.findMany({
+      where: { attendedAt: { gte: chartFrom, lte: to } }
     }),
     prisma.client.count(),
     prisma.appointment.findMany({
@@ -44,13 +80,7 @@ export async function GET(request: Request) {
     }, {})
   ).sort((a, b) => b.count - a.count);
 
-  const monthlyRevenue = await Promise.all(
-    Array.from({ length: 6 }).map(async (_, index) => {
-      const month = subMonths(base, 5 - index);
-      const rows = await prisma.attendance.findMany({ where: { attendedAt: { gte: startOfMonth(month), lte: endOfMonth(month) } } });
-      return { month: format(month, "MM/yy"), revenue: rows.filter((row) => row.paymentStatus === PaymentStatus.PAID).reduce((sum, row) => sum + row.finalValueCents, 0) / 100 };
-    })
-  );
+  const revenueSeries = buildRevenueSeries(chartAttendances, safePeriod, from);
 
   const clientNames = await prisma.client.findMany({ where: { id: { in: topClients.map((item) => item.clientId) } } });
   const topReturningClients = topClients.map((item) => ({
@@ -68,7 +98,7 @@ export async function GET(request: Request) {
       pendingCount: pendingAttendances.length
     },
     byService,
-    monthlyRevenue,
+    revenueSeries,
     todayAppointments,
     topReturningClients
   });

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
 import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
 import { CalendarClock, DollarSign, Users, WalletCards } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -13,18 +12,28 @@ import { formatBrazilDate } from "@/lib/timezone";
 type Dashboard = {
   metrics: { revenue: number; attendancesCount: number; clientsCount: number; averageTicket: number; pendingValue: number; pendingCount: number };
   byService: { name: string; count: number; revenue: number }[];
-  monthlyRevenue: { month: string; revenue: number }[];
+  revenueSeries: { label: string; revenue: number }[];
   todayAppointments: { id: string; startsAt: string; client: { name: string }; service: { name: string } }[];
   topReturningClients: { name: string; count: number }[];
 };
 
+type Period = "daily" | "weekly" | "monthly";
+
+const periodOptions: { value: Period; label: string }[] = [
+  { value: "daily", label: "Hoje" },
+  { value: "weekly", label: "Semana" },
+  { value: "monthly", label: "Mes" }
+];
+
 export default function DashboardPage() {
   const [data, setData] = useState<Dashboard | null>(null);
-  const [month, setMonth] = useState(format(new Date(), "yyyy-MM"));
+  const [period, setPeriod] = useState<Period>("monthly");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/dashboard?month=${month}`).then((res) => res.json()).then(setData);
-  }, [month]);
+    setLoading(true);
+    fetch(`/api/dashboard?period=${period}`).then((res) => res.json()).then(setData).finally(() => setLoading(false));
+  }, [period]);
 
   if (!data) return <p className="py-10 text-center text-cocoa/60">Carregando dashboard...</p>;
 
@@ -38,7 +47,20 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Dashboard" description="Resumo rapido do studio." action={<input type="month" value={month} onChange={(event) => setMonth(event.target.value)} className="h-11 rounded-2xl border border-nude bg-white px-3 text-sm" />} />
+      <PageHeader
+        title="Dashboard"
+        description="Resumo rapido do studio."
+        action={
+          <div className="grid grid-cols-3 rounded-2xl bg-nude p-1">
+            {periodOptions.map((option) => (
+              <button key={option.value} onClick={() => setPeriod(option.value)} className={`rounded-xl px-3 py-2 text-sm font-bold ${period === option.value ? "bg-white text-rosewood shadow" : "text-cocoa/60"}`}>
+                {option.label}
+              </button>
+            ))}
+          </div>
+        }
+      />
+      {loading && <p className="mb-4 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-cocoa/60 shadow-sm">Atualizando indicadores...</p>}
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {cards.map((item) => {
           const Icon = item.icon;
@@ -54,16 +76,18 @@ export default function DashboardPage() {
 
       <section className="mt-5 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <Card className="h-72">
-          <h2 className="mb-4 font-bold">Faturamento por mes</h2>
-          <ResponsiveContainer width="100%" height="85%">
-            <BarChart data={data.monthlyRevenue}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip formatter={(value) => [formatCurrency(Number(value) * 100), "Receita"]} />
-              <Bar dataKey="revenue" name="Receita" fill="#9f5366" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <h2 className="mb-4 font-bold">Faturamento recebido</h2>
+          {data.revenueSeries.some((item) => item.revenue > 0) ? (
+            <ResponsiveContainer width="100%" height="85%">
+              <BarChart data={data.revenueSeries}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="label" />
+                <YAxis />
+                <Tooltip formatter={(value) => [formatCurrency(Number(value) * 100), "Receita"]} />
+                <Bar dataKey="revenue" name="Receita" fill="#9f5366" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <EmptyState title="Sem faturamento" description="Nenhum pagamento recebido no periodo." />}
         </Card>
         <Card className="h-72">
           <h2 className="mb-4 font-bold">Servicos mais vendidos</h2>
