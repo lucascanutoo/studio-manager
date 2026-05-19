@@ -11,7 +11,7 @@ import { formatCurrency } from "@/lib/format";
 import { formatBrazilDate } from "@/lib/timezone";
 
 type Dashboard = {
-  metrics: { revenue: number; attendancesCount: number; clientsCount: number; averageTicket: number };
+  metrics: { revenue: number; attendancesCount: number; clientsCount: number; averageTicket: number; pendingValue: number; pendingCount: number };
   byService: { name: string; count: number; revenue: number }[];
   monthlyRevenue: { month: string; revenue: number }[];
   todayAppointments: { id: string; startsAt: string; client: { name: string }; service: { name: string } }[];
@@ -32,13 +32,14 @@ export default function DashboardPage() {
     { label: "Faturamento", value: formatCurrency(data.metrics.revenue), icon: DollarSign },
     { label: "Atendimentos", value: data.metrics.attendancesCount, icon: CalendarClock },
     { label: "Clientes", value: data.metrics.clientsCount, icon: Users },
-    { label: "Ticket medio", value: formatCurrency(data.metrics.averageTicket), icon: WalletCards }
+    { label: "Ticket medio", value: formatCurrency(data.metrics.averageTicket), icon: WalletCards },
+    { label: "Pendente", value: `${formatCurrency(data.metrics.pendingValue)} (${data.metrics.pendingCount})`, icon: WalletCards }
   ];
 
   return (
     <>
       <PageHeader title="Dashboard" description="Resumo rapido do studio." action={<input type="month" value={month} onChange={(event) => setMonth(event.target.value)} className="h-11 rounded-2xl border border-nude bg-white px-3 text-sm" />} />
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {cards.map((item) => {
           const Icon = item.icon;
           return (

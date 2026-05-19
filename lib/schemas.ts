@@ -1,6 +1,46 @@
-import { AppointmentStatus, PaymentMethod } from "@prisma/client";
+import { AppointmentStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
 import { z } from "zod";
 import { currencyToCents, onlyDigits } from "@/lib/format";
+
+const paymentMethodSchema = z.preprocess((value) => {
+  if (typeof value !== "string") return value;
+  const normalized = value.trim().toUpperCase();
+  const aliases: Record<string, PaymentMethod | "PENDING"> = {
+    PIX: PaymentMethod.PIX,
+    CASH: PaymentMethod.CASH,
+    DINHEIRO: PaymentMethod.CASH,
+    DEBIT_CARD: PaymentMethod.CARD,
+    CREDIT_CARD: PaymentMethod.CARD,
+    CARD: PaymentMethod.CARD,
+    CARTAO: PaymentMethod.CARD,
+    CARTÃO: PaymentMethod.CARD,
+    PENDING: "PENDING",
+    PENDENTE: "PENDING",
+    PAGAMENTO_PENDENTE: "PENDING"
+  };
+  return aliases[normalized] ?? value;
+}, z.union([z.nativeEnum(PaymentMethod), z.literal("PENDING")]));
+
+const paidPaymentMethodSchema = z.preprocess((value) => {
+  if (typeof value !== "string") return value;
+  const normalized = value.trim().toUpperCase();
+  const aliases: Record<string, PaymentMethod> = {
+    PIX: PaymentMethod.PIX,
+    CASH: PaymentMethod.CASH,
+    DINHEIRO: PaymentMethod.CASH,
+    DEBIT_CARD: PaymentMethod.CARD,
+    CREDIT_CARD: PaymentMethod.CARD,
+    CARD: PaymentMethod.CARD,
+    CARTAO: PaymentMethod.CARD,
+    CARTÃO: PaymentMethod.CARD
+  };
+  return aliases[normalized] ?? value;
+}, z.nativeEnum(PaymentMethod));
+
+const optionalCurrencySchema = z.preprocess((value) => {
+  if (value === undefined || value === null || value === "") return "0";
+  return value;
+}, z.union([z.string(), z.number()]).transform(currencyToCents));
 
 export const registerSchema = z.object({
   name: z.string().min(2, "Informe seu nome."),
@@ -36,7 +76,16 @@ export const appointmentSchema = z.object({
 });
 
 export const attendanceSchema = z.object({
-  finalValue: z.union([z.string(), z.number()]).transform(currencyToCents),
-  paymentMethod: z.nativeEnum(PaymentMethod),
+  finalValue: optionalCurrencySchema,
+  paymentMethod: paymentMethodSchema,
   notes: z.string().optional().nullable()
+}).transform((data) => ({
+  finalValue: data.finalValue,
+  paymentMethod: data.paymentMethod === "PENDING" ? null : data.paymentMethod,
+  paymentStatus: data.paymentMethod === "PENDING" ? PaymentStatus.PENDING : PaymentStatus.PAID,
+  notes: data.notes
+}));
+
+export const paymentUpdateSchema = z.object({
+  paymentMethod: paidPaymentMethodSchema
 });

@@ -1,4 +1,4 @@
-import { PrismaClient, AppointmentStatus, PaymentMethod } from "@prisma/client";
+import { PrismaClient, AppointmentStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { addDays, addMinutes, setHours, setMinutes, subDays } from "date-fns";
 
@@ -55,6 +55,7 @@ async function main() {
       serviceId: services[1].id,
       finalValueCents: 8500,
       paymentMethod: PaymentMethod.PIX,
+      paymentStatus: PaymentStatus.PAID,
       notes: "Cliente satisfeita com a tonalidade.",
       attendedAt: doneDate
     }

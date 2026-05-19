@@ -10,7 +10,7 @@ async function hasConflict(startsAt: Date, endsAt: Date, ignoreId: string) {
   const conflict = await prisma.appointment.findFirst({
     where: {
       id: { not: ignoreId },
-      status: { not: AppointmentStatus.CANCELED },
+      status: { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED] },
       startsAt: { lt: endsAt },
       endsAt: { gt: startsAt }
     }

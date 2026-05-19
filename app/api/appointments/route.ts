@@ -10,7 +10,7 @@ async function hasConflict(startsAt: Date, endsAt: Date, ignoreId?: string) {
   const conflict = await prisma.appointment.findFirst({
     where: {
       id: ignoreId ? { not: ignoreId } : undefined,
-      status: { not: AppointmentStatus.CANCELED },
+      status: { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED] },
       startsAt: { lt: endsAt },
       endsAt: { gt: startsAt }
     }
@@ -27,7 +27,10 @@ export async function GET(request: Request) {
   const { from, to } = view === "week" ? getBrazilWeekRange(date) : getBrazilDayRange(date);
 
   const appointments = await prisma.appointment.findMany({
-    where: { startsAt: { gte: from, lte: to } },
+    where: {
+      startsAt: { gte: from, lte: to },
+      status: { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED] }
+    },
     orderBy: { startsAt: "asc" },
     include: { client: true, service: true, attendance: true }
   });
