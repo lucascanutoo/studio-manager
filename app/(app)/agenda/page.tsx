@@ -11,6 +11,7 @@ import { Select } from "@/components/ui/select";
 import { PageHeader } from "@/components/page-header";
 import { formatCurrency, whatsappUrl } from "@/lib/format";
 import { formatBrazilDate, todayInBrazil } from "@/lib/timezone";
+import { getAppointmentStatusBadgeClass, getAppointmentStatusLabel } from "@/lib/appointment-status";
 
 type Appointment = { id: string; startsAt: string; endsAt: string; status: string; client: { name: string; phone: string }; service: { name: string; priceCents: number } };
 type CompleteForm = { finalValue: string; paymentMethod: string };
@@ -113,7 +114,7 @@ export default function AgendaPage() {
                 <p className="font-bold">{formatBrazilDate(item.startsAt, "dd/MM HH:mm")} - {item.client.name}</p>
                 <p className="text-sm text-cocoa/60">{item.service.name} - {formatCurrency(item.service.priceCents)}</p>
               </div>
-              <span className="rounded-full bg-nude px-3 py-1 text-xs font-bold text-cocoa">{item.status}</span>
+              <span className={`rounded-full px-3 py-1 text-xs font-bold ${getAppointmentStatusBadgeClass(item.status)}`}>{getAppointmentStatusLabel(item.status)}</span>
             </div>
             <div className="mt-3 grid grid-cols-5 gap-2">
               <a className="flex h-11 items-center justify-center rounded-2xl bg-green-50 text-green-700" href={whatsappUrl(item.client.phone)} target="_blank" rel="noreferrer"><MessageCircle size={18} /></a>

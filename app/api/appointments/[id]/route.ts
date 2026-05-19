@@ -36,6 +36,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (auth.response) return auth.response;
     const { id } = await params;
     const data = appointmentSchema.parse(await request.json());
+    const editableStatuses: AppointmentStatus[] = [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED];
+    if (!editableStatuses.includes(data.status)) {
+      return NextResponse.json({ message: "Use as acoes da agenda para concluir ou cancelar atendimentos." }, { status: 400 });
+    }
     const service = await prisma.service.findUnique({ where: { id: data.serviceId } });
     if (!service) return NextResponse.json({ message: "Servico nao encontrado." }, { status: 404 });
     const startsAt = parseBrazilDateTime(data.startsAt);

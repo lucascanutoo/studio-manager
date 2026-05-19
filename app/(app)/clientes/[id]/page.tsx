@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/page-header";
 import { formatCurrency, formatPhone, whatsappUrl } from "@/lib/format";
 import { formatBrazilDate } from "@/lib/timezone";
+import { getAppointmentStatusBadgeClass, getAppointmentStatusLabel } from "@/lib/appointment-status";
 
 type ClientDetail = {
   id: string; name: string; phone: string; notes?: string;
@@ -55,7 +56,7 @@ export default function ClientDetailPage() {
             <div key={item.id} className="mb-3 rounded-2xl bg-linen p-3 last:mb-0">
               <div className="flex items-center justify-between gap-3">
                 <p className="font-semibold">{item.service.name}</p>
-                <span className="rounded-full bg-blush px-3 py-1 text-xs font-bold text-rosewood">{item.status}</span>
+                <span className={`rounded-full px-3 py-1 text-xs font-bold ${getAppointmentStatusBadgeClass(item.status)}`}>{getAppointmentStatusLabel(item.status)}</span>
               </div>
               <p className="mt-1 text-sm text-cocoa/60">{formatBrazilDate(item.startsAt, "dd/MM/yyyy HH:mm")}</p>
               {item.attendance && <p className="mt-1 text-sm font-semibold">{formatCurrency(item.attendance.finalValueCents)}</p>}

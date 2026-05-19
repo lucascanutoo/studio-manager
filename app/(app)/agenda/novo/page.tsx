@@ -54,10 +54,11 @@ function AppointmentForm() {
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    const payload = id ? form : { ...form, status: "SCHEDULED" };
     const response = await fetch(id ? `/api/appointments/${id}` : "/api/appointments", {
       method: id ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form)
+      body: JSON.stringify(payload)
     });
     const data = await response.json();
     if (!response.ok) {
@@ -69,7 +70,7 @@ function AppointmentForm() {
 
   return (
     <>
-      <PageHeader title={id ? "Remarcar horario" : "Novo agendamento"} description="Selecione cliente, servico, data e status." />
+      <PageHeader title={id ? "Remarcar horario" : "Novo agendamento"} description={id ? "Atualize cliente, servico, data e status." : "Selecione cliente, servico, data e horario."} />
       <Card className="mx-auto max-w-xl">
         <form onSubmit={submit}>
           <Select label="Cliente" value={form.clientId} onChange={(e) => setForm({ ...form, clientId: e.target.value })}>
@@ -79,12 +80,12 @@ function AppointmentForm() {
             {services.map((service) => <option key={service.id} value={service.id}>{service.name} - {formatCurrency(service.priceCents)}</option>)}
           </Select>
           <Input label="Data e horario" type="datetime-local" value={form.startsAt} onChange={(e) => setForm({ ...form, startsAt: e.target.value })} />
-          <Select label="Status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-            <option value="SCHEDULED">Agendado</option>
-            <option value="CONFIRMED">Confirmado</option>
-            <option value="COMPLETED">Concluido</option>
-            <option value="CANCELED">Cancelado</option>
-          </Select>
+          {id && (
+            <Select label="Status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+              <option value="SCHEDULED">Agendado</option>
+              <option value="CONFIRMED">Confirmado</option>
+            </Select>
+          )}
           <Textarea label="Observacoes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
           {error && <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <Button className="w-full" icon={<Save size={18} />}>Salvar horario</Button>

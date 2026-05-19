@@ -42,6 +42,9 @@ export async function POST(request: Request) {
     const auth = await requireUser();
     if (auth.response) return auth.response;
     const data = appointmentSchema.parse(await request.json());
+    if (data.status !== AppointmentStatus.SCHEDULED) {
+      return NextResponse.json({ message: "Novo agendamento deve iniciar como Agendado." }, { status: 400 });
+    }
     const service = await prisma.service.findUnique({ where: { id: data.serviceId } });
     if (!service) return NextResponse.json({ message: "Servico nao encontrado." }, { status: 404 });
 
@@ -52,7 +55,7 @@ export async function POST(request: Request) {
     }
 
     const appointment = await prisma.appointment.create({
-      data: { clientId: data.clientId, serviceId: data.serviceId, startsAt, endsAt, status: data.status, notes: data.notes },
+      data: { clientId: data.clientId, serviceId: data.serviceId, startsAt, endsAt, status: AppointmentStatus.SCHEDULED, notes: data.notes },
       include: { client: true, service: true }
     });
     return NextResponse.json({ appointment }, { status: 201 });
