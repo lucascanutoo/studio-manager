@@ -16,7 +16,6 @@ export const loginSchema = z.object({
 export const clientSchema = z.object({
   name: z.string().min(2, "Informe o nome."),
   phone: z.string().min(8, "Informe o WhatsApp.").transform(onlyDigits),
-  birthDate: z.string().optional().nullable(),
   notes: z.string().optional().nullable()
 });
 

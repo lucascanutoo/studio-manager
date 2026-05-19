@@ -20,8 +20,8 @@ async function main() {
   });
 
   const clients = await Promise.all([
-    prisma.client.create({ data: { name: "Mariana Costa", phone: "11988887777", birthDate: new Date("1994-06-12"), notes: "Prefere henna castanho claro." } }),
-    prisma.client.create({ data: { name: "Bianca Souza", phone: "11977776666", birthDate: new Date("1990-03-20"), notes: "Cliente recorrente." } }),
+    prisma.client.create({ data: { name: "Mariana Costa", phone: "11988887777", notes: "Prefere henna castanho claro." } }),
+    prisma.client.create({ data: { name: "Bianca Souza", phone: "11977776666", notes: "Cliente recorrente." } }),
     prisma.client.create({ data: { name: "Camila Alves", phone: "11966665555", notes: "Evitar horários após 18h." } })
   ]);
 

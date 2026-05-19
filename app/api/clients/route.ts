@@ -21,9 +21,7 @@ export async function POST(request: Request) {
     const auth = await requireUser();
     if (auth.response) return auth.response;
     const data = clientSchema.parse(await request.json());
-    const client = await prisma.client.create({
-      data: { ...data, birthDate: data.birthDate ? new Date(data.birthDate) : null }
-    });
+    const client = await prisma.client.create({ data });
     return NextResponse.json({ client }, { status: 201 });
   } catch (error) {
     return handleApiError(error);

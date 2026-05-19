@@ -24,10 +24,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (auth.response) return auth.response;
     const { id } = await params;
     const data = clientSchema.parse(await request.json());
-    const client = await prisma.client.update({
-      where: { id },
-      data: { ...data, birthDate: data.birthDate ? new Date(data.birthDate) : null }
-    });
+    const client = await prisma.client.update({ where: { id }, data });
     return NextResponse.json({ client });
   } catch (error) {
     return handleApiError(error);

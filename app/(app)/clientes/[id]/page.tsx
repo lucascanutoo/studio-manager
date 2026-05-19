@@ -9,10 +9,10 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/page-header";
-import { dateInputValue, formatCurrency, formatPhone, whatsappUrl } from "@/lib/format";
+import { formatCurrency, formatPhone, whatsappUrl } from "@/lib/format";
 
 type ClientDetail = {
-  id: string; name: string; phone: string; birthDate?: string; notes?: string;
+  id: string; name: string; phone: string; notes?: string;
   appointments: { id: string; startsAt: string; status: string; service: { name: string }; attendance?: { finalValueCents: number } | null }[];
 };
 
@@ -20,12 +20,12 @@ export default function ClientDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [client, setClient] = useState<ClientDetail | null>(null);
-  const [form, setForm] = useState({ name: "", phone: "", birthDate: "", notes: "" });
+  const [form, setForm] = useState({ name: "", phone: "", notes: "" });
 
   useEffect(() => {
     fetch(`/api/clients/${params.id}`).then((res) => res.json()).then((data) => {
       setClient(data.client);
-      setForm({ name: data.client.name, phone: formatPhone(data.client.phone), birthDate: dateInputValue(data.client.birthDate), notes: data.client.notes ?? "" });
+      setForm({ name: data.client.name, phone: formatPhone(data.client.phone), notes: data.client.notes ?? "" });
     });
   }, [params.id]);
 
@@ -45,7 +45,6 @@ export default function ClientDetailPage() {
           <form onSubmit={save}>
             <Input label="Nome" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             <Input label="WhatsApp" value={form.phone} onChange={(e) => setForm({ ...form, phone: formatPhone(e.target.value) })} />
-            <Input label="Nascimento" type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
             <Textarea label="Observacoes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             <Button className="w-full" icon={<Save size={18} />}>Salvar</Button>
           </form>

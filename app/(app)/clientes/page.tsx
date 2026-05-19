@@ -11,13 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/page-header";
 import { formatPhone, whatsappUrl } from "@/lib/format";
 
-type Client = { id: string; name: string; phone: string; birthDate?: string; notes?: string; _count?: { attendances: number } };
+type Client = { id: string; name: string; phone: string; notes?: string; _count?: { attendances: number } };
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ name: "", phone: "", birthDate: "", notes: "" });
+  const [form, setForm] = useState({ name: "", phone: "", notes: "" });
 
   async function load() {
     setLoading(true);
@@ -35,7 +35,7 @@ export default function ClientsPage() {
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     await fetch("/api/clients", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-    setForm({ name: "", phone: "", birthDate: "", notes: "" });
+    setForm({ name: "", phone: "", notes: "" });
     load();
   }
 
@@ -54,7 +54,6 @@ export default function ClientsPage() {
           <form onSubmit={create}>
             <Input label="Nome" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
             <Input label="WhatsApp" value={form.phone} onChange={(e) => setForm({ ...form, phone: formatPhone(e.target.value) })} required />
-            <Input label="Nascimento" type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
             <Textarea label="Observacoes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             <Button className="w-full" icon={<Plus size={18} />}>Adicionar</Button>
           </form>
