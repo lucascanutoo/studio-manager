@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -6,9 +7,10 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   icon?: ReactNode;
 };
 
-export function Button({ className, variant = "primary", icon, children, ...props }: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({ className, variant = "primary", icon, children, ...props }, ref) {
   return (
     <button
+      ref={ref}
       className={cn(
         "inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60",
         variant === "primary" && "bg-rosewood text-white shadow-soft hover:bg-[#884457]",
@@ -23,4 +25,4 @@ export function Button({ className, variant = "primary", icon, children, ...prop
       {children}
     </button>
   );
-}
+});
