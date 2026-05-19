@@ -1,6 +1,6 @@
-# Beauty Schedule
+# Studio Manager
 
-Beauty Schedule e um MVP full stack mobile first para profissionais de studio de sobrancelhas/beleza administrarem clientes, servicos, agenda, atendimentos, pagamentos e indicadores do negocio.
+Studio Manager e um MVP full stack mobile first para profissionais de studio de beleza administrarem clientes, servicos, agenda, atendimentos, pagamentos e indicadores do negocio.
 
 ## Tecnologias
 
