@@ -2,19 +2,19 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { addDays, format } from "date-fns";
 import { CalendarPlus, CheckCircle2, MessageCircle, Pencil, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { formatCurrency, whatsappUrl } from "@/lib/format";
+import { formatBrazilDate, todayInBrazil } from "@/lib/timezone";
 
 type Appointment = { id: string; startsAt: string; endsAt: string; status: string; client: { name: string; phone: string }; service: { name: string; priceCents: number } };
 
 export default function AgendaPage() {
   const [view, setView] = useState("day");
-  const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [date, setDate] = useState(todayInBrazil());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   async function load() {
@@ -44,11 +44,11 @@ export default function AgendaPage() {
   }
 
   function confirmMessage(item: Appointment) {
-    return `Ola, ${item.client.name}! Passando para confirmar seu horario no dia ${format(new Date(item.startsAt), "dd/MM")} as ${format(new Date(item.startsAt), "HH:mm")} para ${item.service.name}.`;
+    return `Ola, ${item.client.name}! Passando para confirmar seu horario no dia ${formatBrazilDate(item.startsAt, "dd/MM")} as ${formatBrazilDate(item.startsAt, "HH:mm")} para ${item.service.name}.`;
   }
 
   function reminderMessage(item: Appointment) {
-    return `Ola, ${item.client.name}! Lembrando do seu atendimento amanha as ${format(new Date(item.startsAt), "HH:mm")}.`;
+    return `Ola, ${item.client.name}! Lembrando do seu atendimento amanha as ${formatBrazilDate(item.startsAt, "HH:mm")}.`;
   }
 
   return (
@@ -64,7 +64,7 @@ export default function AgendaPage() {
       {next && (
         <Card className="mb-4 border-rosewood bg-blush/60">
           <p className="text-xs font-bold uppercase tracking-wide text-rosewood">Proximo atendimento</p>
-          <p className="mt-1 font-bold">{format(new Date(next.startsAt), "dd/MM HH:mm")} - {next.client.name}</p>
+          <p className="mt-1 font-bold">{formatBrazilDate(next.startsAt, "dd/MM HH:mm")} - {next.client.name}</p>
           <p className="text-sm text-cocoa/65">{next.service.name}</p>
         </Card>
       )}
@@ -73,7 +73,7 @@ export default function AgendaPage() {
           <Card key={item.id}>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="font-bold">{format(new Date(item.startsAt), "dd/MM HH:mm")} - {item.client.name}</p>
+                <p className="font-bold">{formatBrazilDate(item.startsAt, "dd/MM HH:mm")} - {item.client.name}</p>
                 <p className="text-sm text-cocoa/60">{item.service.name} - {formatCurrency(item.service.priceCents)}</p>
               </div>
               <span className="rounded-full bg-nude px-3 py-1 text-xs font-bold text-cocoa">{item.status}</span>

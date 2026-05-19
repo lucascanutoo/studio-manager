@@ -2,6 +2,7 @@ import { endOfMonth, format, startOfMonth, subMonths } from "date-fns";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/api";
+import { getBrazilDayRange, todayInBrazil } from "@/lib/timezone";
 
 export async function GET(request: Request) {
   const auth = await requireUser();
@@ -10,6 +11,7 @@ export async function GET(request: Request) {
   const base = searchParams.get("month") ? new Date(`${searchParams.get("month")}-01T00:00:00`) : new Date();
   const from = startOfMonth(base);
   const to = endOfMonth(base);
+  const todayRange = getBrazilDayRange(todayInBrazil());
 
   const [attendances, clientsCount, todayAppointments, topClients] = await Promise.all([
     prisma.attendance.findMany({
@@ -18,7 +20,7 @@ export async function GET(request: Request) {
     }),
     prisma.client.count(),
     prisma.appointment.findMany({
-      where: { startsAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)), lte: new Date(new Date().setHours(23, 59, 59, 999)) } },
+      where: { startsAt: { gte: todayRange.from, lte: todayRange.to } },
       orderBy: { startsAt: "asc" },
       include: { client: true, service: true }
     }),

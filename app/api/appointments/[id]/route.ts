@@ -4,6 +4,7 @@ import { AppointmentStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { appointmentSchema } from "@/lib/schemas";
 import { handleApiError, requireUser } from "@/lib/api";
+import { parseBrazilDateTime } from "@/lib/timezone";
 
 async function hasConflict(startsAt: Date, endsAt: Date, ignoreId: string) {
   const conflict = await prisma.appointment.findFirst({
@@ -37,7 +38,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const data = appointmentSchema.parse(await request.json());
     const service = await prisma.service.findUnique({ where: { id: data.serviceId } });
     if (!service) return NextResponse.json({ message: "Servico nao encontrado." }, { status: 404 });
-    const startsAt = new Date(data.startsAt);
+    const startsAt = parseBrazilDateTime(data.startsAt);
     const endsAt = addMinutes(startsAt, service.durationMinutes);
     if (await hasConflict(startsAt, endsAt, id)) {
       return NextResponse.json({ message: "Ja existe um atendimento nesse horario." }, { status: 409 });

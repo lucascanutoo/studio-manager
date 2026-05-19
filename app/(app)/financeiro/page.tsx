@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { format } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { formatCurrency } from "@/lib/format";
+import { formatBrazilDate } from "@/lib/timezone";
 
 type Attendance = {
   id: string;
@@ -47,7 +47,7 @@ export default function FinancePage() {
               <div>
                 <p className="font-bold">{item.client.name}</p>
                 <p className="text-sm text-cocoa/60">{item.service.name}</p>
-                <p className="mt-1 text-xs text-cocoa/50">{format(new Date(item.attendedAt), "dd/MM/yyyy HH:mm")} - {paymentLabels[item.paymentMethod]}</p>
+                <p className="mt-1 text-xs text-cocoa/50">{formatBrazilDate(item.attendedAt, "dd/MM/yyyy HH:mm")} - {paymentLabels[item.paymentMethod]}</p>
               </div>
               <p className="font-bold text-rosewood">{formatCurrency(item.finalValueCents)}</p>
             </div>

@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/page-header";
-import { datetimeLocalValue, formatCurrency } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
+import { formatBrazilDateTimeInput } from "@/lib/timezone";
 
 type Client = { id: string; name: string };
 type Service = { id: string; name: string; priceCents: number; active: boolean };
@@ -30,7 +31,7 @@ function AppointmentForm() {
   const [clients, setClients] = useState<Client[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [error, setError] = useState("");
-  const [form, setForm] = useState({ clientId: "", serviceId: "", startsAt: datetimeLocalValue(new Date()), status: "SCHEDULED", notes: "" });
+  const [form, setForm] = useState({ clientId: "", serviceId: "", startsAt: formatBrazilDateTimeInput(new Date()), status: "SCHEDULED", notes: "" });
 
   useEffect(() => {
     Promise.all([fetch("/api/clients").then((res) => res.json()), fetch("/api/services").then((res) => res.json())]).then(([clientData, serviceData]) => {
@@ -40,7 +41,7 @@ function AppointmentForm() {
     if (id) {
       fetch(`/api/appointments/${id}`).then((res) => res.json()).then((data) => {
         const item = data.appointment;
-        setForm({ clientId: item.clientId, serviceId: item.serviceId, startsAt: datetimeLocalValue(item.startsAt), status: item.status, notes: item.notes ?? "" });
+        setForm({ clientId: item.clientId, serviceId: item.serviceId, startsAt: formatBrazilDateTimeInput(item.startsAt), status: item.status, notes: item.notes ?? "" });
       });
     }
   }, [id]);
@@ -56,7 +57,7 @@ function AppointmentForm() {
     const response = await fetch(id ? `/api/appointments/${id}` : "/api/appointments", {
       method: id ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, startsAt: new Date(form.startsAt).toISOString() })
+      body: JSON.stringify(form)
     });
     const data = await response.json();
     if (!response.ok) {

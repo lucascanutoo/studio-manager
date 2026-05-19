@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { formatCurrency } from "@/lib/format";
+import { formatBrazilDate } from "@/lib/timezone";
 
 type Dashboard = {
   metrics: { revenue: number; attendancesCount: number; clientsCount: number; averageTicket: number };
@@ -83,7 +84,7 @@ export default function DashboardPage() {
           <h2 className="mb-3 font-bold">Proximos de hoje</h2>
           {data.todayAppointments.length ? data.todayAppointments.map((item) => (
             <div key={item.id} className="mb-3 rounded-2xl bg-linen p-3 last:mb-0">
-              <p className="font-semibold">{format(new Date(item.startsAt), "HH:mm")} - {item.client.name}</p>
+              <p className="font-semibold">{formatBrazilDate(item.startsAt, "HH:mm")} - {item.client.name}</p>
               <p className="text-sm text-cocoa/60">{item.service.name}</p>
             </div>
           )) : <EmptyState title="Agenda livre" description="Nenhum atendimento para hoje." />}
