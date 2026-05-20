@@ -36,7 +36,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [studio, setStudio] = useState<StudioTheme | null>(null);
 
   useEffect(() => {
-    fetch("/api/auth/me").then((response) => response.json()).then((data) => setStudio(data.user?.studio ?? null)).catch(() => setStudio(null));
+    function loadStudio() {
+      fetch("/api/auth/me").then((response) => response.json()).then((data) => setStudio(data.user?.studio ?? null)).catch(() => setStudio(null));
+    }
+
+    loadStudio();
+    window.addEventListener("studio-theme-updated", loadStudio);
+    return () => window.removeEventListener("studio-theme-updated", loadStudio);
   }, []);
 
   const themeStyle = useMemo(() => ({
