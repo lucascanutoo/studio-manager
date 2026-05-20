@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, LockKeyhole, Sparkles } from "lucide-react";
+import { LockKeyhole, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,7 +52,7 @@ export default function LoginPage() {
           {mode === "register" && <Input label="Nome" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />}
           {mode === "register" && <Input label="Nome do studio" value={form.studioName} onChange={(event) => setForm({ ...form, studioName: event.target.value })} />}
           <Input label="Email" type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
-          <Input label="Senha" type="password" icon={<Eye size={18} />} value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
+          <PasswordInput label="Senha" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
           {error && <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <Button className="w-full" disabled={loading} icon={<LockKeyhole size={18} />}>{loading ? "Entrando..." : mode === "login" ? "Entrar" : "Criar conta"}</Button>
           <p className="mt-4 text-center text-xs text-cocoa/60">Seed: admin@rosebeauty.com ou admin@goldbrows.com / 123456</p>
