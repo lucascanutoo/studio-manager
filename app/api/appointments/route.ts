@@ -6,9 +6,10 @@ import { appointmentSchema } from "@/lib/schemas";
 import { handleApiError, requireUser } from "@/lib/api";
 import { getBrazilDayRange, getBrazilWeekRange, parseBrazilDateTime, todayInBrazil } from "@/lib/timezone";
 
-async function hasConflict(startsAt: Date, endsAt: Date, ignoreId?: string) {
+async function hasConflict(studioId: string, startsAt: Date, endsAt: Date, ignoreId?: string) {
   const conflict = await prisma.appointment.findFirst({
     where: {
+      studioId,
       id: ignoreId ? { not: ignoreId } : undefined,
       status: { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED] },
       startsAt: { lt: endsAt },
@@ -28,6 +29,7 @@ export async function GET(request: Request) {
 
   const appointments = await prisma.appointment.findMany({
     where: {
+      studioId: auth.user!.studioId,
       startsAt: { gte: from, lte: to },
       status: { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED] }
     },
@@ -45,17 +47,21 @@ export async function POST(request: Request) {
     if (data.status !== AppointmentStatus.SCHEDULED) {
       return NextResponse.json({ message: "Novo agendamento deve iniciar como Agendado." }, { status: 400 });
     }
-    const service = await prisma.service.findUnique({ where: { id: data.serviceId } });
+    const [service, client] = await Promise.all([
+      prisma.service.findFirst({ where: { id: data.serviceId, studioId: auth.user!.studioId } }),
+      prisma.client.findFirst({ where: { id: data.clientId, studioId: auth.user!.studioId } })
+    ]);
     if (!service) return NextResponse.json({ message: "Servico nao encontrado." }, { status: 404 });
+    if (!client) return NextResponse.json({ message: "Cliente nao encontrada." }, { status: 404 });
 
     const startsAt = parseBrazilDateTime(data.startsAt);
     const endsAt = addMinutes(startsAt, service.durationMinutes);
-    if (await hasConflict(startsAt, endsAt)) {
+    if (await hasConflict(auth.user!.studioId, startsAt, endsAt)) {
       return NextResponse.json({ message: "Ja existe um atendimento nesse horario." }, { status: 409 });
     }
 
     const appointment = await prisma.appointment.create({
-      data: { clientId: data.clientId, serviceId: data.serviceId, startsAt, endsAt, status: AppointmentStatus.SCHEDULED, notes: data.notes },
+      data: { studioId: auth.user!.studioId, clientId: data.clientId, serviceId: data.serviceId, startsAt, endsAt, status: AppointmentStatus.SCHEDULED, notes: data.notes },
       include: { client: true, service: true }
     });
     return NextResponse.json({ appointment }, { status: 201 });

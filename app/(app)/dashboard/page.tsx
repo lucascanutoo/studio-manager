@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
-import { CalendarClock, DollarSign, Users, WalletCards } from "lucide-react";
+import { CalendarClock, DollarSign, ImagePlus, Save, Users, WalletCards } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/page-header";
 import { formatCurrency } from "@/lib/format";
 import { formatBrazilDate } from "@/lib/timezone";
@@ -16,6 +18,8 @@ type Dashboard = {
   todayAppointments: { id: string; startsAt: string; client: { name: string }; service: { name: string } }[];
   topReturningClients: { name: string; count: number }[];
 };
+
+type StudioSettings = { name: string; logoUrl: string; primaryColor: string; secondaryColor: string };
 
 type Period = "daily" | "weekly" | "monthly";
 
@@ -29,11 +33,43 @@ export default function DashboardPage() {
   const [data, setData] = useState<Dashboard | null>(null);
   const [period, setPeriod] = useState<Period>("monthly");
   const [loading, setLoading] = useState(true);
+  const [studio, setStudio] = useState<StudioSettings>({ name: "", logoUrl: "", primaryColor: "#9f5366", secondaryColor: "#f8dfe7" });
+  const [studioMessage, setStudioMessage] = useState("");
 
   useEffect(() => {
     setLoading(true);
     fetch(`/api/dashboard?period=${period}`).then((res) => res.json()).then(setData).finally(() => setLoading(false));
   }, [period]);
+
+  useEffect(() => {
+    fetch("/api/studio").then((res) => res.json()).then((data) => {
+      if (!data.studio) return;
+      setStudio({
+        name: data.studio.name ?? "",
+        logoUrl: data.studio.logoUrl ?? "",
+        primaryColor: data.studio.primaryColor ?? "#9f5366",
+        secondaryColor: data.studio.secondaryColor ?? "#f8dfe7"
+      });
+    });
+  }, []);
+
+  function onLogoChange(file?: File) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setStudio((current) => ({ ...current, logoUrl: String(reader.result) }));
+    reader.readAsDataURL(file);
+  }
+
+  async function saveStudio() {
+    setStudioMessage("");
+    await fetch("/api/studio", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(studio)
+    });
+    document.documentElement.style.setProperty("--color-primary-rgb", "");
+    setStudioMessage("Identidade visual salva. Recarregue a pagina para aplicar no menu.");
+  }
 
   if (!data) return <p className="py-10 text-center text-cocoa/60">Carregando dashboard...</p>;
 
@@ -73,6 +109,31 @@ export default function DashboardPage() {
           );
         })}
       </section>
+
+      <Card className="mt-5">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="font-bold text-ink">Identidade do studio</h2>
+            <p className="text-sm text-cocoa/60">Logo e cores usadas na navegacao do sistema.</p>
+          </div>
+          <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-blush text-rosewood">
+            {studio.logoUrl ? <img src={studio.logoUrl} alt="Logo do studio" className="h-full w-full object-cover" /> : <ImagePlus size={20} />}
+          </div>
+        </div>
+        <div className="grid gap-3 md:grid-cols-4">
+          <Input label="Nome do studio" value={studio.name} onChange={(event) => setStudio({ ...studio, name: event.target.value })} />
+          <label className="mb-4 block">
+            <span className="mb-2 block text-sm font-semibold text-cocoa">Logo</span>
+            <input type="file" accept="image/*" onChange={(event) => onLogoChange(event.target.files?.[0])} className="block min-h-12 w-full rounded-2xl border border-nude/80 bg-white px-4 py-3 text-sm text-cocoa shadow-sm file:mr-3 file:rounded-xl file:border-0 file:bg-nude file:px-3 file:py-2 file:text-sm file:font-bold file:text-cocoa" />
+          </label>
+          <Input label="Cor principal" type="color" value={studio.primaryColor} onChange={(event) => setStudio({ ...studio, primaryColor: event.target.value })} />
+          <Input label="Cor secundaria" type="color" value={studio.secondaryColor} onChange={(event) => setStudio({ ...studio, secondaryColor: event.target.value })} />
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Button icon={<Save size={18} />} onClick={saveStudio}>Salvar identidade</Button>
+          {studioMessage && <p className="text-sm font-semibold text-green-700">{studioMessage}</p>}
+        </div>
+      </Card>
 
       <section className="mt-5 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <Card className="h-72">

@@ -4,6 +4,8 @@
 
 :root {
   color-scheme: light;
+  --color-primary-rgb: 159 83 102;
+  --color-secondary-rgb: 248 223 231;
 }
 
 * {

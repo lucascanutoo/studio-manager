@@ -6,8 +6,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        rosewood: "#9f5366",
-        blush: "#f8dfe7",
+        rosewood: "rgb(var(--color-primary-rgb) / <alpha-value>)",
+        blush: "rgb(var(--color-secondary-rgb) / <alpha-value>)",
         nude: "#f4e8df",
         cocoa: "#5c4744",
         linen: "#fffaf7",

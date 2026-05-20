@@ -11,7 +11,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const { id } = await params;
     const data = paymentUpdateSchema.parse(await request.json());
 
-    const attendance = await prisma.attendance.findUnique({ where: { id } });
+    const attendance = await prisma.attendance.findFirst({ where: { id, studioId: auth.user!.studioId } });
     if (!attendance) return NextResponse.json({ message: "Atendimento nao encontrado." }, { status: 404 });
     if (attendance.paymentStatus !== PaymentStatus.PENDING) {
       return NextResponse.json({ message: "Este pagamento ja esta marcado como pago." }, { status: 409 });

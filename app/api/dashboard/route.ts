@@ -49,22 +49,23 @@ export async function GET(request: Request) {
   const chartFrom = safePeriod === "monthly" ? addMonths(from, -5) : from;
   const [attendances, chartAttendances, clientsCount, todayAppointments, topClients] = await Promise.all([
     prisma.attendance.findMany({
-      where: { attendedAt: { gte: from, lte: to } },
+      where: { studioId: auth.user!.studioId, attendedAt: { gte: from, lte: to } },
       include: { service: true, client: true }
     }),
     prisma.attendance.findMany({
-      where: { attendedAt: { gte: chartFrom, lte: to } }
+      where: { studioId: auth.user!.studioId, attendedAt: { gte: chartFrom, lte: to } }
     }),
-    prisma.client.count(),
+    prisma.client.count({ where: { studioId: auth.user!.studioId } }),
     prisma.appointment.findMany({
       where: {
+        studioId: auth.user!.studioId,
         startsAt: { gte: todayRange.from, lte: todayRange.to },
         status: { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED] }
       },
       orderBy: { startsAt: "asc" },
       include: { client: true, service: true }
     }),
-    prisma.attendance.groupBy({ by: ["clientId"], _count: { clientId: true }, orderBy: { _count: { clientId: "desc" } }, take: 5 })
+    prisma.attendance.groupBy({ by: ["clientId"], where: { studioId: auth.user!.studioId }, _count: { clientId: true }, orderBy: { _count: { clientId: "desc" } }, take: 5 })
   ]);
 
   const paidAttendances = attendances.filter((item) => item.paymentStatus === PaymentStatus.PAID);
@@ -82,7 +83,7 @@ export async function GET(request: Request) {
 
   const revenueSeries = buildRevenueSeries(chartAttendances, safePeriod, from);
 
-  const clientNames = await prisma.client.findMany({ where: { id: { in: topClients.map((item) => item.clientId) } } });
+  const clientNames = await prisma.client.findMany({ where: { studioId: auth.user!.studioId, id: { in: topClients.map((item) => item.clientId) } } });
   const topReturningClients = topClients.map((item) => ({
     name: clientNames.find((client) => client.id === item.clientId)?.name ?? "Cliente",
     count: item._count.clientId

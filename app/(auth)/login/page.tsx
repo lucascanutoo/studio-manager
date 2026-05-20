@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [form, setForm] = useState({ name: "", email: "admin@beautyschedule.com", password: "123456" });
+  const [form, setForm] = useState({ name: "", studioName: "", email: "admin@rosebeauty.com", password: "123456" });
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -49,11 +49,12 @@ export default function LoginPage() {
             <button type="button" onClick={() => setMode("register")} className={`rounded-full py-3 text-sm font-semibold ${mode === "register" ? "bg-white text-rosewood shadow" : "text-cocoa/60"}`}>Cadastro</button>
           </div>
           {mode === "register" && <Input label="Nome" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />}
+          {mode === "register" && <Input label="Nome do studio" value={form.studioName} onChange={(event) => setForm({ ...form, studioName: event.target.value })} />}
           <Input label="Email" type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
           <Input label="Senha" type="password" icon={<Eye size={18} />} value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
           {error && <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <Button className="w-full" disabled={loading} icon={<LockKeyhole size={18} />}>{loading ? "Entrando..." : mode === "login" ? "Entrar" : "Criar conta"}</Button>
-          <p className="mt-4 text-center text-xs text-cocoa/60">Seed: admin@beautyschedule.com / 123456</p>
+          <p className="mt-4 text-center text-xs text-cocoa/60">Seed: admin@rosebeauty.com ou admin@goldbrows.com / 123456</p>
         </form>
       </section>
     </main>

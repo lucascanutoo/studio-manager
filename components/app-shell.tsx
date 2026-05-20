@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { BarChart3, CalendarDays, CreditCard, LogOut, Scissors, Sparkles, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,9 +14,35 @@ const nav = [
   { href: "/financeiro", label: "Financeiro", icon: CreditCard }
 ];
 
+type StudioTheme = {
+  name: string;
+  logoUrl?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+};
+
+function hexToRgb(hex?: string | null, fallback = "159 83 102") {
+  if (!hex || !/^#[0-9a-fA-F]{6}$/.test(hex)) return fallback;
+  const value = hex.slice(1);
+  const r = parseInt(value.slice(0, 2), 16);
+  const g = parseInt(value.slice(2, 4), 16);
+  const b = parseInt(value.slice(4, 6), 16);
+  return `${r} ${g} ${b}`;
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [studio, setStudio] = useState<StudioTheme | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me").then((response) => response.json()).then((data) => setStudio(data.user?.studio ?? null)).catch(() => setStudio(null));
+  }, []);
+
+  const themeStyle = useMemo(() => ({
+    "--color-primary-rgb": hexToRgb(studio?.primaryColor),
+    "--color-secondary-rgb": hexToRgb(studio?.secondaryColor, "248 223 231")
+  }) as React.CSSProperties, [studio]);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -23,12 +50,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-shell text-cocoa">
+    <div className="min-h-screen bg-shell text-cocoa" style={themeStyle}>
       <aside className="fixed left-0 top-0 hidden h-screen w-64 border-r border-white/70 bg-white/80 p-5 shadow-sm backdrop-blur-xl lg:block">
         <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rosewood text-white shadow-soft"><Sparkles size={22} /></div>
+          <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-rosewood text-white shadow-soft">
+            {studio?.logoUrl ? <img src={studio.logoUrl} alt={`Logo ${studio.name}`} className="h-full w-full object-cover" /> : <Sparkles size={22} />}
+          </div>
           <div>
-            <p className="font-bold text-ink">Beauty Schedule</p>
+            <p className="font-bold text-ink">{studio?.name ?? "Beauty Schedule"}</p>
             <p className="text-xs text-cocoa/55">Studio admin</p>
           </div>
         </div>

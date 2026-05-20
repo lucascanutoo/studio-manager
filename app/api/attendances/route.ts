@@ -9,7 +9,10 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status");
   const attendances = await prisma.attendance.findMany({
-    where: status === "pending" ? { paymentStatus: PaymentStatus.PENDING } : undefined,
+    where: {
+      studioId: auth.user!.studioId,
+      ...(status === "pending" ? { paymentStatus: PaymentStatus.PENDING } : {})
+    },
     orderBy: { attendedAt: "desc" },
     include: { client: true, service: true, appointment: true }
   });

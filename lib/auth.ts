@@ -8,8 +8,8 @@ function secretKey() {
   return new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret-change-me");
 }
 
-export async function createSession(userId: string) {
-  const token = await new SignJWT({ userId })
+export async function createSession(userId: string, studioId: string) {
+  const token = await new SignJWT({ userId, studioId })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
@@ -40,7 +40,25 @@ export async function getSessionUser() {
     if (!payload.userId || typeof payload.userId !== "string") return null;
     return prisma.user.findUnique({
       where: { id: payload.userId },
-      select: { id: true, name: true, email: true, createdAt: true }
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        studioId: true,
+        createdAt: true,
+        studio: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logoUrl: true,
+            primaryColor: true,
+            secondaryColor: true,
+            theme: true
+          }
+        }
+      }
     });
   } catch {
     return null;

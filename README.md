@@ -17,6 +17,8 @@ Studio Manager e um MVP full stack mobile first para profissionais de studio de 
 ## Funcionalidades
 
 - Login e cadastro de administradora
+- Multi-tenant por studio, com dados isolados por `studioId`
+- Identidade visual por studio: nome, logo, cor principal e cor secundaria
 - Rotas protegidas por middleware
 - Dashboard com faturamento, atendimentos, clientes, ticket medio, servicos mais vendidos, retornos e graficos
 - CRUD de clientes com busca por nome/telefone, historico e WhatsApp
@@ -63,10 +65,13 @@ npm run dev
 
 Acesse `http://localhost:3000`.
 
-## Usuario seed
+## Usuarios seed
 
-- Email: `admin@beautyschedule.com`
-- Senha: `123456`
+- Rose Beauty: `admin@rosebeauty.com`
+- Gold Brows: `admin@goldbrows.com`
+- Senha para ambos: `123456`
+
+Cada login pertence a um studio diferente e enxerga apenas seus proprios clientes, servicos, agenda, atendimentos e financeiro.
 
 ## Comandos Prisma
 

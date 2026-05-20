@@ -46,6 +46,7 @@ const requiredCurrencySchema = z.preprocess((value) => value, z.union([z.string(
 
 export const registerSchema = z.object({
   name: z.string().min(2, "Informe seu nome."),
+  studioName: z.string().min(2, "Informe o nome do studio."),
   email: z.string().email("Informe um email valido."),
   password: z.string().min(6, "Use pelo menos 6 caracteres.")
 });

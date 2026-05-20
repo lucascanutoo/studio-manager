@@ -10,7 +10,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (auth.response) return auth.response;
     const { id } = await params;
     const data = attendanceSchema.parse(await request.json());
-    const appointment = await prisma.appointment.findUnique({ where: { id } });
+    const appointment = await prisma.appointment.findFirst({ where: { id, studioId: auth.user!.studioId } });
     if (!appointment) return NextResponse.json({ message: "Agendamento nao encontrado." }, { status: 404 });
 
     const result = await prisma.$transaction(async (tx) => {
@@ -19,6 +19,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         update: { finalValueCents: data.finalValue, paymentMethod: data.paymentMethod, paymentStatus: data.paymentStatus, notes: data.notes },
         create: {
           appointmentId: id,
+          studioId: appointment.studioId,
           clientId: appointment.clientId,
           serviceId: appointment.serviceId,
           finalValueCents: data.finalValue,
