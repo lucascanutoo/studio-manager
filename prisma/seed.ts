@@ -18,7 +18,9 @@ async function createStudioData(input: {
       slug: input.slug,
       primaryColor: input.primaryColor,
       secondaryColor: input.secondaryColor,
-      theme: "light"
+      theme: "light",
+      onboardingCompleted: true,
+      onboardingStep: 4
     }
   });
 

@@ -55,7 +55,9 @@ export async function getSessionUser() {
             logoUrl: true,
             primaryColor: true,
             secondaryColor: true,
-            theme: true
+            theme: true,
+            onboardingCompleted: true,
+            onboardingStep: true
           }
         }
       }

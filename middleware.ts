@@ -3,7 +3,7 @@ import { jwtVerify } from "jose";
 
 const SESSION_COOKIE = "beauty_session";
 
-const protectedPaths = ["/dashboard", "/clientes", "/servicos", "/agenda", "/financeiro"];
+const protectedPaths = ["/dashboard", "/clientes", "/servicos", "/agenda", "/financeiro", "/onboarding"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -22,5 +22,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/clientes/:path*", "/servicos/:path*", "/agenda/:path*", "/financeiro/:path*"]
+  matcher: ["/dashboard/:path*", "/clientes/:path*", "/servicos/:path*", "/agenda/:path*", "/financeiro/:path*", "/onboarding/:path*"]
 };

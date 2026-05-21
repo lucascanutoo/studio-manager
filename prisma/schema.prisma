@@ -39,6 +39,8 @@ model Studio {
   primaryColor   String?
   secondaryColor String?
   theme          String?
+  onboardingCompleted Boolean @default(false)
+  onboardingStep Int @default(1)
   users          User[]
   clients        Client[]
   services       Service[]

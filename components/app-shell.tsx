@@ -19,6 +19,7 @@ type StudioTheme = {
   logoUrl?: string | null;
   primaryColor?: string | null;
   secondaryColor?: string | null;
+  onboardingCompleted?: boolean;
 };
 
 function hexToRgb(hex?: string | null, fallback = "159 83 102") {
@@ -37,13 +38,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     function loadStudio() {
-      fetch("/api/auth/me").then((response) => response.json()).then((data) => setStudio(data.user?.studio ?? null)).catch(() => setStudio(null));
+      fetch("/api/auth/me").then((response) => response.json()).then((data) => {
+        const nextStudio = data.user?.studio ?? null;
+        setStudio(nextStudio);
+        if (nextStudio && !nextStudio.onboardingCompleted && pathname !== "/onboarding") {
+          router.replace("/onboarding");
+        }
+      }).catch(() => setStudio(null));
     }
 
     loadStudio();
     window.addEventListener("studio-theme-updated", loadStudio);
     return () => window.removeEventListener("studio-theme-updated", loadStudio);
-  }, []);
+  }, [pathname, router]);
 
   const themeStyle = useMemo(() => ({
     "--color-primary-rgb": hexToRgb(studio?.primaryColor),
