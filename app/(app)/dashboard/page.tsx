@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
 import { CalendarClock, DollarSign, ImagePlus, Palette, Save, Sparkles, Trash2, Users, WalletCards } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -14,11 +14,11 @@ import { formatCurrency } from "@/lib/format";
 import { formatBrazilDate } from "@/lib/timezone";
 
 type Dashboard = {
-  metrics: { revenue: number; attendancesCount: number; clientsCount: number; averageTicket: number; pendingValue: number; pendingCount: number };
-  byService: { name: string; count: number; revenue: number }[];
-  revenueSeries: { label: string; revenue: number }[];
-  todayAppointments: { id: string; startsAt: string; client: { name: string }; service: { name: string } }[];
-  topReturningClients: { name: string; count: number }[];
+  metrics?: Partial<{ revenue: number; attendancesCount: number; clientsCount: number; averageTicket: number; pendingValue: number; pendingCount: number }>;
+  byService?: { name: string; count: number; revenue: number }[];
+  revenueSeries?: { label: string; revenue: number }[];
+  todayAppointments?: { id: string; startsAt: string; client: { name: string }; service: { name: string } }[];
+  topReturningClients?: { name: string; count: number }[];
 };
 
 type Period = "daily" | "weekly" | "monthly";
@@ -43,6 +43,24 @@ const defaultStudio: StudioSettings = {
   secondaryColor: "#f8dfe7"
 };
 
+const emptyDashboard: Required<Dashboard> = {
+  metrics: { revenue: 0, attendancesCount: 0, clientsCount: 0, averageTicket: 0, pendingValue: 0, pendingCount: 0 },
+  byService: [],
+  revenueSeries: [],
+  todayAppointments: [],
+  topReturningClients: []
+};
+
+function normalizeDashboard(payload?: Dashboard | null): Required<Dashboard> {
+  return {
+    metrics: { ...emptyDashboard.metrics, ...(payload?.metrics ?? {}) },
+    byService: Array.isArray(payload?.byService) ? payload.byService : [],
+    revenueSeries: Array.isArray(payload?.revenueSeries) ? payload.revenueSeries : [],
+    todayAppointments: Array.isArray(payload?.todayAppointments) ? payload.todayAppointments : [],
+    topReturningClients: Array.isArray(payload?.topReturningClients) ? payload.topReturningClients : []
+  };
+}
+
 function hexToRgb(hex: string, fallback = "159 83 102") {
   if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return fallback;
   const r = parseInt(hex.slice(1, 3), 16);
@@ -55,6 +73,7 @@ export default function DashboardPage() {
   const [data, setData] = useState<Dashboard | null>(null);
   const [period, setPeriod] = useState<Period>("monthly");
   const [loading, setLoading] = useState(true);
+  const [dashboardError, setDashboardError] = useState("");
   const [studioModalOpen, setStudioModalOpen] = useState(false);
   const [studio, setStudio] = useState<StudioSettings>(defaultStudio);
   const [studioLoading, setStudioLoading] = useState(false);
@@ -62,10 +81,25 @@ export default function DashboardPage() {
   const [studioMessage, setStudioMessage] = useState("");
   const [studioError, setStudioError] = useState("");
 
-  useEffect(() => {
+  const loadDashboard = useCallback(async () => {
     setLoading(true);
-    fetch(`/api/dashboard?period=${period}`).then((res) => res.json()).then(setData).finally(() => setLoading(false));
+    setDashboardError("");
+    try {
+      const response = await fetch(`/api/dashboard?period=${period}`);
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.message ?? "Nao foi possivel carregar o dashboard.");
+      setData(normalizeDashboard(payload));
+    } catch (error) {
+      setData(normalizeDashboard(null));
+      setDashboardError(error instanceof Error ? error.message : "Nao foi possivel carregar o dashboard.");
+    } finally {
+      setLoading(false);
+    }
   }, [period]);
+
+  useEffect(() => {
+    void loadDashboard();
+  }, [loadDashboard]);
 
   async function openStudioModal() {
     setStudioModalOpen(true);
@@ -137,15 +171,20 @@ export default function DashboardPage() {
     }
   }
 
-  if (!data) return <p className="py-10 text-center text-cocoa/60">Carregando dashboard...</p>;
+  if (loading && !data) return <p className="py-10 text-center text-cocoa/60">Carregando dashboard...</p>;
 
   const cards = [
-    { label: "Faturamento", value: formatCurrency(data.metrics.revenue), icon: DollarSign },
-    { label: "Atendimentos", value: data.metrics.attendancesCount, icon: CalendarClock },
-    { label: "Clientes", value: data.metrics.clientsCount, icon: Users },
-    { label: "Ticket medio", value: formatCurrency(data.metrics.averageTicket), icon: WalletCards },
-    { label: "Pendente", value: `${formatCurrency(data.metrics.pendingValue)} (${data.metrics.pendingCount})`, icon: WalletCards }
+    { label: "Faturamento", value: formatCurrency(data?.metrics?.revenue ?? 0), icon: DollarSign },
+    { label: "Atendimentos", value: data?.metrics?.attendancesCount ?? 0, icon: CalendarClock },
+    { label: "Clientes", value: data?.metrics?.clientsCount ?? 0, icon: Users },
+    { label: "Ticket medio", value: formatCurrency(data?.metrics?.averageTicket ?? 0), icon: WalletCards },
+    { label: "Pendente", value: `${formatCurrency(data?.metrics?.pendingValue ?? 0)} (${data?.metrics?.pendingCount ?? 0})`, icon: WalletCards }
   ];
+
+  const revenueSeries = data?.revenueSeries ?? [];
+  const byService = data?.byService ?? [];
+  const todayAppointments = data?.todayAppointments ?? [];
+  const topReturningClients = data?.topReturningClients ?? [];
 
   return (
     <>
@@ -163,6 +202,12 @@ export default function DashboardPage() {
         }
       />
       {loading && <p className="mb-4 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-cocoa/60 shadow-sm">Atualizando indicadores...</p>}
+      {dashboardError && (
+        <Card className="mb-4 border border-red-100 bg-red-50">
+          <p className="text-sm font-semibold text-red-700">{dashboardError}</p>
+          <Button className="mt-3" variant="outline" onClick={() => void loadDashboard()}>Tentar novamente</Button>
+        </Card>
+      )}
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {cards.map((item) => {
           const Icon = item.icon;
@@ -179,9 +224,9 @@ export default function DashboardPage() {
       <section className="mt-5 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <Card className="h-72">
           <h2 className="mb-4 font-bold">Faturamento recebido</h2>
-          {data.revenueSeries.some((item) => item.revenue > 0) ? (
+          {revenueSeries.some((item) => item.revenue > 0) ? (
             <ResponsiveContainer width="100%" height="85%">
-              <BarChart data={data.revenueSeries}>
+              <BarChart data={revenueSeries}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="label" />
                 <YAxis />
@@ -193,11 +238,11 @@ export default function DashboardPage() {
         </Card>
         <Card className="h-72">
           <h2 className="mb-4 font-bold">Servicos mais vendidos</h2>
-          {data.byService.length ? (
+          {byService.length ? (
             <ResponsiveContainer width="100%" height="85%">
               <PieChart>
-                <Pie data={data.byService} dataKey="count" nameKey="name" innerRadius={48} outerRadius={82}>
-                  {data.byService.map((_, index) => <Cell key={index} fill={["#9f5366", "#d88fa0", "#c8a99c", "#6e5450"][index % 4]} />)}
+                <Pie data={byService} dataKey="count" nameKey="name" innerRadius={48} outerRadius={82}>
+                  {byService.map((_, index) => <Cell key={index} fill={["#9f5366", "#d88fa0", "#c8a99c", "#6e5450"][index % 4]} />)}
                 </Pie>
                 <Tooltip />
               </PieChart>
@@ -209,7 +254,7 @@ export default function DashboardPage() {
       <section className="mt-5 grid gap-4 lg:grid-cols-2">
         <Card>
           <h2 className="mb-3 font-bold">Proximos de hoje</h2>
-          {data.todayAppointments.length ? data.todayAppointments.map((item) => (
+          {todayAppointments.length ? todayAppointments.map((item) => (
             <div key={item.id} className="mb-3 rounded-2xl bg-linen p-3 last:mb-0">
               <p className="font-semibold">{formatBrazilDate(item.startsAt, "HH:mm")} - {item.client.name}</p>
               <p className="text-sm text-cocoa/60">{item.service.name}</p>
@@ -218,7 +263,7 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <h2 className="mb-3 font-bold">Clientes que retornaram</h2>
-          {data.topReturningClients.length ? data.topReturningClients.map((item) => (
+          {topReturningClients.length ? topReturningClients.map((item) => (
             <div key={item.name} className="mb-3 flex items-center justify-between rounded-2xl bg-linen p-3 last:mb-0">
               <span className="font-semibold">{item.name}</span>
               <span className="rounded-full bg-blush px-3 py-1 text-sm font-bold text-rosewood">{item.count}x</span>

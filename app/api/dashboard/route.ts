@@ -2,7 +2,7 @@ import { addDays, addMonths } from "date-fns";
 import { NextResponse } from "next/server";
 import { AppointmentStatus, PaymentStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/api";
+import { handleApiError, requireUser } from "@/lib/api";
 import { formatBrazilDate, getBrazilDayRange, getBrazilMonthRange, getBrazilWeekRange, todayInBrazil } from "@/lib/timezone";
 
 type DashboardPeriod = "daily" | "weekly" | "monthly";
@@ -38,6 +38,7 @@ function buildRevenueSeries(rows: { attendedAt: Date; finalValueCents: number; p
 }
 
 export async function GET(request: Request) {
+  try {
   const auth = await requireUser();
   if (auth.response) return auth.response;
   const { searchParams } = new URL(request.url);
@@ -103,4 +104,7 @@ export async function GET(request: Request) {
     todayAppointments,
     topReturningClients
   });
+  } catch (error) {
+    return handleApiError(error);
+  }
 }
