@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Beauty Schedule",
+  title: "Studio Manager",
   description: "Sistema administrativo mobile first para studio de beleza."
 };
 

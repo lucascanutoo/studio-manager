@@ -39,7 +39,7 @@ export default function LoginPage() {
           <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-rosewood text-white shadow-soft">
             <Sparkles size={26} />
           </div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-rosewood">Beauty Schedule</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-rosewood">Studio Manager</p>
           <h1 className="mt-3 text-4xl font-bold leading-tight text-cocoa">Agenda e gestao para beleza</h1>
           <p className="mt-3 text-base text-cocoa/70">Entre para organizar clientes, agenda, atendimentos e faturamento em uma experiencia pensada para celular.</p>
         </div>

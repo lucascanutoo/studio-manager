@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const SESSION_COOKIE = "beauty_session";
+const SESSION_COOKIE = "studio_session";
 
 const protectedPaths = ["/dashboard", "/clientes", "/servicos", "/agenda", "/financeiro", "/onboarding"];
 

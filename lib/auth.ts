@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
 
-const SESSION_COOKIE = "beauty_session";
+const SESSION_COOKIE = "studio_session";
 
 function secretKey() {
   return new TextEncoder().encode(process.env.JWT_SECRET ?? "dev-secret-change-me");

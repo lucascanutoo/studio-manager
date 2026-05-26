@@ -298,7 +298,7 @@ export function OnboardingFlow() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rosewood text-white shadow-soft">
             <Sparkles size={26} />
           </div>
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-rosewood">Beauty Schedule</p>
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-rosewood">Studio Manager</p>
           <h1 className="mt-3 text-3xl font-bold text-ink sm:text-4xl">Bem-vinda ao Studio Manager ✨</h1>
           <p className="mt-2 text-cocoa/65">Vamos configurar seu studio.</p>
         </div>

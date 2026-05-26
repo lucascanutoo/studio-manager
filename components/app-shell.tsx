@@ -70,7 +70,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {studio?.logoUrl ? <img src={studio.logoUrl} alt={`Logo ${studio.name}`} className="h-full w-full object-cover" /> : <Sparkles size={22} />}
           </div>
           <div>
-            <p className="font-bold text-ink">{studio?.name ?? "Beauty Schedule"}</p>
+            <p className="font-bold text-ink">{studio?.name ?? "Studio Manager"}</p>
             <p className="text-xs text-cocoa/55">Studio admin</p>
           </div>
         </div>

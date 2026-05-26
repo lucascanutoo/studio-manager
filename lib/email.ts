@@ -21,7 +21,7 @@ const getSmtpConfig = () => {
 
 const sendWelcomeEmail = async (to: string, name: string, studioName: string): Promise<void> => {
   const smtpConfig = getSmtpConfig();
-  const from = process.env.SMTP_FROM || "Beauty Schedule";
+  const from = process.env.SMTP_FROM || "Studio Manager";
   const appUrl = process.env.APP_URL || "http://localhost:3000";
 
   const htmlTemplate = `
@@ -126,17 +126,17 @@ const sendWelcomeEmail = async (to: string, name: string, studioName: string): P
   <body>
     <div class="container">
       <div class="header">
-        <h1>Beauty Schedule</h1>
+        <h1>Studio Manager</h1>
       </div>
       <div class="content">
         <div class="greeting">
           <p>Olá <strong>${name}</strong>,</p>
-          <p>Bem-vindo ao Beauty Schedule! Sua conta foi criada com sucesso e você está pronto para começar a organizar seu studio de beleza.</p>
+          <p>Bem-vindo ao Studio Manager! Sua conta foi criada com sucesso e você está pronto para começar a organizar seu studio de beleza.</p>
         </div>
 
         <div class="studio-name">${studioName}</div>
 
-        <p style="font-size: 14px; color: #6b5d58; line-height: 1.6;">Com o Beauty Schedule, você pode:</p>
+        <p style="font-size: 14px; color: #6b5d58; line-height: 1.6;">Com o Studio Manager, você pode:</p>
         <ul class="features">
           <li>Gerenciar agenda de atendimentos</li>
           <li>Organizar dados dos clientes</li>
@@ -153,7 +153,7 @@ const sendWelcomeEmail = async (to: string, name: string, studioName: string): P
         </p>
       </div>
       <div class="footer">
-        <p style="margin: 0;">© 2026 Beauty Schedule. Todos os direitos reservados.</p>
+        <p style="margin: 0;">© 2026 Studio Manager. Todos os direitos reservados.</p>
       </div>
     </div>
   </body>
@@ -163,7 +163,7 @@ const sendWelcomeEmail = async (to: string, name: string, studioName: string): P
   if (!smtpConfig) {
     console.log("[EMAIL] Mode dev - Email não será enviado. Conteúdo abaixo:");
     console.log(`[EMAIL] To: ${to}`);
-    console.log(`[EMAIL] Subject: Bem-vindo ao Beauty Schedule`);
+    console.log(`[EMAIL] Subject: Bem-vindo ao Studio Manager`);
     console.log(`[EMAIL] Name: ${name}`);
     console.log(`[EMAIL] Studio: ${studioName}`);
     return;
@@ -174,7 +174,7 @@ const sendWelcomeEmail = async (to: string, name: string, studioName: string): P
   await transporter.sendMail({
     from,
     to,
-    subject: "Bem-vindo ao Beauty Schedule",
+    subject: "Bem-vindo ao Studio Manager",
     html: htmlTemplate
   });
 };

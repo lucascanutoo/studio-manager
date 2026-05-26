@@ -67,7 +67,7 @@ Acesse `http://localhost:3000`.
 
 ## Configuração de Email
 
-O Beauty Schedule envia um email de boas-vindas ao concluir o cadastro. A configuração é opcional:
+O Studio Manager envia um email de boas-vindas ao concluir o cadastro. A configuração é opcional:
 
 - **Sem configuração**: O email é logado no console (modo desenvolvimento)
 - **Com SMTP configurado**: O email é enviado via servidor SMTP
@@ -82,7 +82,7 @@ SMTP_PORT="587"
 SMTP_SECURE="false"
 SMTP_USER="seu-email@gmail.com"
 SMTP_PASS="sua-senha-de-app"
-SMTP_FROM="Beauty Schedule <seu-email@gmail.com>"
+SMTP_FROM="Studio Manager <seu-email@gmail.com>"
 APP_URL="http://localhost:3000"
 ```
 
@@ -103,7 +103,7 @@ SMTP_PORT="587"
 SMTP_SECURE="false"
 SMTP_USER="resend"
 SMTP_PASS="re_xxxxxxxxxxxxx"  # Sua API key do Resend
-SMTP_FROM="Beauty Schedule <onboarding@resend.dev>"
+SMTP_FROM="Studio Manager <onboarding@resend.dev>"
 ```
 
 ## Usuarios seed
