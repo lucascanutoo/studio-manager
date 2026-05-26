@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { createSession } from "@/lib/auth";
+import { sendWelcomeEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { handleApiError } from "@/lib/api";
 import { registerSchema } from "@/lib/schemas";
@@ -37,6 +38,9 @@ export async function POST(request: Request) {
       select: { id: true, name: true, email: true, role: true, studio: true }
     });
     await createSession(user.id, studio.id);
+
+    sendWelcomeEmail(data.email.toLowerCase(), data.name, data.studioName).catch(console.error);
+
     return NextResponse.json({ user });
   } catch (error) {
     return handleApiError(error);

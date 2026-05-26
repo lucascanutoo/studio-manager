@@ -65,6 +65,47 @@ npm run dev
 
 Acesse `http://localhost:3000`.
 
+## Configuração de Email
+
+O Beauty Schedule envia um email de boas-vindas ao concluir o cadastro. A configuração é opcional:
+
+- **Sem configuração**: O email é logado no console (modo desenvolvimento)
+- **Com SMTP configurado**: O email é enviado via servidor SMTP
+
+### Variáveis de Ambiente
+
+Edite o arquivo `.env` com as variáveis SMTP:
+
+```env
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="seu-email@gmail.com"
+SMTP_PASS="sua-senha-de-app"
+SMTP_FROM="Beauty Schedule <seu-email@gmail.com>"
+APP_URL="http://localhost:3000"
+```
+
+### Gmail
+
+1. Acesse [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+2. Selecione "Mail" e "Windows Computer"
+3. Copie a senha de 16 caracteres gerada
+4. Cole em `SMTP_PASS` no `.env`
+
+### Resend (Alternativa)
+
+Use [Resend](https://resend.com) como provedor de email:
+
+```env
+SMTP_HOST="smtp.resend.com"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="resend"
+SMTP_PASS="re_xxxxxxxxxxxxx"  # Sua API key do Resend
+SMTP_FROM="Beauty Schedule <onboarding@resend.dev>"
+```
+
 ## Usuarios seed
 
 - Rose Beauty: `admin@rosebeauty.com`
